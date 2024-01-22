@@ -1,6 +1,6 @@
 import m from "https://esm.sh/mithril@2.2.2"
 
-const BLACK = "000000";
+const BLACK = "#000000";
 /**
  * Classe qui représente un point sur
  * un plan cartésien.  Le point est donc
@@ -95,28 +95,125 @@ export class Circle{
     toString(){
         return `Cercle(${ this.#radius }, ${ this.getCenter().getX() }, ${ this.getCenter().getY() })`;
     }
+
+    bouger(deltaX, deltaY){
+        const newCenter = new Point(this.getCenter().getX() + deltaX,
+            this.getCenter().getY() - deltaY);
+        this.setCenter(newCenter)
+    }
+
+    getRepresentationMithril(){
+        const attr = {
+            cx: this.getCenter().getX(),
+            cy: this.getCenter().getY(),
+            r: this.getRadius(),
+            fill: this.getColor(),
+
+        };
+        return m("circle", attr);
+    }
 }
 
+export class Rectangle {
+
+    constructor(coin, largeur, hauteur, id) {
+        this.coin = coin;
+        this.largeur = largeur;
+        this.hauteur = hauteur;
+        this.id = id;
+        this.color = BLACK;
+    }
+
+    getId(){
+        return this.id;
+    }
+
+    bouger(deltaX, deltaY){
+        const nouveauCoin = new Point(this.coin.getX() + deltaX,
+            this.coin.getY() - deltaY);
+        this.coin = nouveauCoin
+    }
+
+    getColor(){
+        return this.color;
+    }
+
+    getRepresentationMithril(){
+        const attr = {
+            x: this.coin.getX(),
+            y: this.coin.getY(),
+            width: this.largeur,
+            height: this.hauteur,
+            fill: this.getColor(),
+
+        };
+        return m("rect", attr);
+    }
+
+    toString(){
+        return `Rectangle(${ this.coin.getX() }, ${ this.coin.getY() }, ${ this.largeur }, ${ this.hauteur })`;
+    }
+
+    setColor(color){
+        this.color = color;
+    }
+
+}
+
+
+export class Text {
+    constructor(coin, text, id) {
+        this.coin = coin;
+        this.text = text;
+        this.id = id;
+    }
+
+    getId(){
+        return this.id;
+    }
+
+    bouger(deltaX, deltaY){
+        const nouveauCoin = new Point(this.coin.getX() + deltaX,
+            this.coin.getY() - deltaY);
+        this.coin = nouveauCoin
+    }
+
+    getColor(){
+        return this.color;
+    }
+
+    getRepresentationMithril(){
+        const attr = {
+            x: this.coin.getX(),
+            y: this.coin.getY(),
+            fill: this.getColor(),
+
+        };
+        return m("text", attr, this.text);
+    }
+
+    toString(){
+        return `Text(${ this.coin.getX() }, ${ this.coin.getY() }, ${ this.text })`;
+    }
+
+    setColor(color){
+        this.color = color;
+    }
+
+}
 /**
- * Dessine tous les cercles dans un svg.  Cette fonction
+ * Dessine toutes les formes dans un svg.  Cette fonction
  * nettoye le svg avant d'ajouter les cercles.
  *
  * @param node {HTMLElement} un element svg
- * @param circles {Circle[]} Les cercles à dessiner
+ * @param shapes {Circle[]} Les formes à dessiner
  */
-export function drawCircles(node, circles){
-    let svgCircles = [];
-    for(const circle of circles){
-        const attr = {
-            cx: circle.getCenter().getX(),
-            cy: circle.getCenter().getY(),
-            r: circle.getRadius(),
-            fill: `#${circle.getColor()}`,
-
-        };
-        svgCircles.push(m("circle", attr))
+export function drawShapes(node, shapes){
+    let svgShapes = [];
+    for(const shape of shapes){
+        svgShapes.push(shape.getRepresentationMithril())
     }
-    m.render(node, svgCircles);
+    m.render(node, svgShapes);
 }
 
 function identity(x){
@@ -130,18 +227,20 @@ function functionOrDefault(fn){
     return identity;
 }
 
-function drawIcons(circle,
+function drawIcons(shape,
                    onClickUp,
                    onClickDown,
                    onClickLeft,
                    onClickRight,
-                   onClickPaint){
+                   onClickPaint,
+                   onClickDelete){
     return [
-        m("i.fa-solid.fa-arrow-up.is-clickable", {onclick: () => onClickUp(circle.getId())}),
-        m("i.fa-solid.fa-arrow-down.is-clickable", {onclick: () => onClickDown(circle.getId())}),
-        m("i.fa-solid.fa-arrow-left.is-clickable", {onclick: () => onClickLeft(circle.getId())}),
-        m("i.fa-solid.fa-arrow-right.is-clickable", {onclick: () => onClickRight(circle.getId())}),
-        m("i.fa-solid.fa-paint-roller.is-clickable", {onclick: () => onClickPaint(circle.getId())}),
+        m("i.fa-solid.fa-arrow-up.is-clickable", {onclick: () => onClickUp(shape.getId())}),
+        m("i.fa-solid.fa-arrow-down.is-clickable", {onclick: () => onClickDown(shape.getId())}),
+        m("i.fa-solid.fa-arrow-left.is-clickable", {onclick: () => onClickLeft(shape.getId())}),
+        m("i.fa-solid.fa-arrow-right.is-clickable", {onclick: () => onClickRight(shape.getId())}),
+        m("input", {type: 'color', onchange: (evt) => onClickPaint(shape.getId(), evt.target.value)}),
+        m("i.fa-solid.fa-trash.is-clickable", {onclick: () => onClickDelete(shape.getId())}),
     ]
 }
 
@@ -171,6 +270,10 @@ function drawIcons(circle,
  *        qui sera appelée lorsque l'icone peinture
  *        sera cliquée.  L'id du cercle sera passé en argument de
  *        la fonction.
+ * @param onClickDelete Argument optionnel qui doit être une fonction
+ *        qui sera appelée lorsque l'icone poubelle
+ *        sera cliquée.  L'id du cercle sera passé en argument de
+ *        la fonction.
  */
 export function populateTable(node,
                               circles,
@@ -178,7 +281,8 @@ export function populateTable(node,
                               onClickDown=undefined,
                               onClickLeft=undefined,
                               onClickRight=undefined,
-                              onClickPaint=undefined){
+                              onClickPaint=undefined,
+                              onClickDelete = undefined){
     const rows = [];
     for(const circle of circles){
         const row =[m("td", circle.getId()),
@@ -188,7 +292,8 @@ export function populateTable(node,
                 functionOrDefault(onClickDown),
                 functionOrDefault(onClickLeft),
                 functionOrDefault(onClickRight),
-                functionOrDefault(onClickPaint)))];
+                functionOrDefault(onClickPaint),
+                functionOrDefault(onClickDelete)))];
         rows.push(m("tr", row))
     }
     m.render(node, rows);

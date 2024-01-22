@@ -1,58 +1,63 @@
 
-import {drawCircles, populateTable, Circle, Point, randomColor} from "./tp1.js";
+import {drawShapes, populateTable, Circle, Point, Text, Rectangle, randomColor} from "./tp1.js";
 
-const circles = []
+const shapes = []
 
-function getCircleById(circleId){
-    for(const circle of circles){
-        if(circle.getId() === circleId){
-            return circle;
+function getShapeById(shapeId){
+    for(const shape of shapes){
+        if(shape.getId() === shapeId){
+            return shape;
         }
     }
 }
 
-function onClickUp(circleId){
-    const circle = getCircleById(circleId);
-    const center = circle.getCenter();
-    const newCenter = new Point(center.getX(), center.getY() - 10);
-    circle.setCenter(newCenter);
-    renderCircles();
+function getShapeIndexById(shapeId){
+    let i = 0;
+    for(const shape of shapes){
+        if(shape.getId() === shapeId){
+            return i;
+        }
+        i ++;
+    }
+    return -1;
 }
 
-function onClickDown(circleId){
-    const circle = getCircleById(circleId);
-    const center = circle.getCenter();
-    const newCenter = new Point(center.getX(), center.getY() + 10);
-    circle.setCenter(newCenter);
-    renderCircles();
+function onClickUp(shapeId){
+    const shape = getShapeById(shapeId);
+    shape.bouger(0, 10);
+    renderShapes();
 }
 
-function onClickLeft(circleId){
-    const circle = getCircleById(circleId);
-    const center = circle.getCenter();
-    const newCenter = new Point(center.getX() - 10, center.getY());
-    circle.setCenter(newCenter);
-    renderCircles();
+function onClickDown(shapeId){
+    const shape = getShapeById(shapeId);
+    shape.bouger(0, -10);
+    renderShapes();
 }
 
-function onClickRight(circleId){
-    const circle = getCircleById(circleId);
-    const center = circle.getCenter();
-    const newCenter = new Point(center.getX() + 10, center.getY());
-    circle.setCenter(newCenter);
-    renderCircles();
+function onClickLeft(shapeId){
+    const shape = getShapeById(shapeId);
+    shape.bouger(-10, 0);
+    renderShapes();
+}
+
+function onClickRight(shapeId){
+    const shape = getShapeById(shapeId);
+    shape.bouger(10, 0);
+    renderShapes();
 }
 
 
 
-function onClickPaint(circleId){
-    const circle = getCircleById(circleId);
-    circle.setColor(randomColor(Date.now()))
-    renderCircles();
+function onClickPaint(shapeId, color){
+    const shape = getShapeById(shapeId);
+    shape.setColor(color)
+    renderShapes();
 }
 
-function pointToString(point){
-    return `(${point.getX()}, ${point.getY()})`;
+function onClickTrash(circleId){
+    const index = getShapeIndexById(circleId);
+    shapes.splice(index, 1)
+    renderShapes();
 }
 
 function drawNewCircle(){
@@ -61,29 +66,62 @@ function drawNewCircle(){
     const r = parseInt(document.getElementById("cr").value)
     const p = new Point(x, y);
     const circle = new Circle(p, r, Date.now());
-    circles.push(circle);
-    renderCircles();
+    shapes.push(circle);
+    renderShapes();
 }
+
+
+function drawNewRectangle() {
+    const x = parseInt(document.getElementById("rect-top-left-x").value)
+    const y = parseInt(document.getElementById("rect-top-left-y").value)
+    const width = parseInt(document.getElementById("rect-width").value)
+    const height = parseInt(document.getElementById("rect-height").value)
+
+    const p = new Point(x, y);
+    const rectangle = new Rectangle(p, width, height, Date.now());
+    shapes.push(rectangle);
+    renderShapes();
+
+}
+
+function drawNewText() {
+    const x = parseInt(document.getElementById("text-top-left-x").value)
+    const y = parseInt(document.getElementById("text-top-left-y").value)
+    const text = document.getElementById("text-value").value
+
+    const p = new Point(x, y);
+    const rectangle = new Text(p, text, Date.now());
+    shapes.push(rectangle);
+    renderShapes();
+
+}
+
+
 
 function clearCircles(){
-    circles.length = 0;
-    renderCircles();
+    shapes.length = 0;
+    renderShapes();
 }
 
 
-function renderCircles(){
-    drawCircles(document.getElementById("canvas"), circles);
+function renderShapes(){
+    drawShapes(document.getElementById("canvas"), shapes);
     populateTable(document.getElementById("table-body"),
-        circles,
+        shapes,
         onClickUp,
         onClickDown,
         onClickLeft,
         onClickRight,
-        onClickPaint);
+        onClickPaint,
+        onClickTrash);
 }
 
 
 
 document.getElementById("draw-circle").addEventListener("click", drawNewCircle);
+document.getElementById("draw-rectangle").addEventListener("click", drawNewRectangle);
+document.getElementById("draw-text").addEventListener("click", drawNewText);
+
 document.getElementById("clear-drawing").addEventListener("click", clearCircles);
+
 
