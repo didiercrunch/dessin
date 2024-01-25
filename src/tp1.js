@@ -246,7 +246,7 @@ function drawIcons(shape,
 
 /**
  * @param node {HTMLElement} un element tbody
- * @param circles {Circle[]} Les cercles
+ * @param shapes {Circle[]} Les cercles
  * @param pointToString Argument optionnel qui doit être une fonction
  *        qui prend en paramêtre un Point et retourne un String qui
  *        représente le point.
@@ -276,7 +276,7 @@ function drawIcons(shape,
  *        la fonction.
  */
 export function populateTable(node,
-                              circles,
+                              shapes,
                               onClickUp=undefined,
                               onClickDown=undefined,
                               onClickLeft=undefined,
@@ -284,10 +284,10 @@ export function populateTable(node,
                               onClickPaint=undefined,
                               onClickDelete = undefined){
     const rows = [];
-    for(const circle of circles){
-        const row =[m("td", circle.getId()),
-            m("td", circle.toString()),
-            m("td", drawIcons(circle,
+    for(const shape of shapes){
+        const row =[m("td", shape.getId()),
+            m("td", shape.toString()),
+            m("td", drawIcons(shape,
                 functionOrDefault(onClickUp),
                 functionOrDefault(onClickDown),
                 functionOrDefault(onClickLeft),

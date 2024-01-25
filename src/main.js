@@ -54,8 +54,8 @@ function onClickPaint(shapeId, color){
     renderShapes();
 }
 
-function onClickTrash(circleId){
-    const index = getShapeIndexById(circleId);
+function onClickTrash(shapeId){
+    const index = getShapeIndexById(shapeId);
     shapes.splice(index, 1)
     renderShapes();
 }
@@ -98,7 +98,7 @@ function drawNewText() {
 
 
 
-function clearCircles(){
+function clearShapes(){
     shapes.length = 0;
     renderShapes();
 }
@@ -122,6 +122,6 @@ document.getElementById("draw-circle").addEventListener("click", drawNewCircle);
 document.getElementById("draw-rectangle").addEventListener("click", drawNewRectangle);
 document.getElementById("draw-text").addEventListener("click", drawNewText);
 
-document.getElementById("clear-drawing").addEventListener("click", clearCircles);
+document.getElementById("clear-drawing").addEventListener("click", clearShapes);
 
 
